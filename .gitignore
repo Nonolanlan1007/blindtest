@@ -1,0 +1,28 @@
+# Client files
+blindtest-react/node_modules
+blindtest-react/.pnp
+blindtest-react/.pnp.js
+blindtest-react/coverage
+blindtest-react/.next/
+blindtest-react/out/
+blindtest-react/build
+blindtest-react/.DS_Store
+blindtest-react/*.pem
+blindtest-react/npm-debug.log*
+blindtest-react/yarn-debug.log*
+blindtest-react/yarn-error.log*
+blindtest-react/*.local
+blindtest-react/.env
+blindtest-react/.vercel
+blindtest-react/*.tsbuildinfo
+blindtest-react/next-env.d.ts
+blindtest-react/.idea
+blindtest-react/.vscode
+
+# Server files
+blindtest-api/node_modules
+blindtest-api/.idea
+blindtest-api/.vscode
+blindtest-api/dist
+blindtest-api/*.local
+blindtest-api/.env
