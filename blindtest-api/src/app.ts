@@ -5,6 +5,7 @@ import fs, {existsSync} from "fs";
 import {createServer} from "http";
 import morgan from "morgan";
 import path from "path";
+import cors from "cors";
 
 const app = express();
 const server = createServer(app);
@@ -15,6 +16,7 @@ app.use(morgan(`${blue("[LOGS]")} [:date[iso]] [:remote-addr] :method :status :u
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/../public'));
 app.set('views', path.join(__dirname, '/views'));
+app.use(cors());
 
 function readDirectory(directory: string) {
   fs.readdirSync(directory, { withFileTypes: true }).forEach(async (file) => {
