@@ -5,13 +5,13 @@
       <h2 class="subtitle">Partie introuvable !</h2>
 
       <div class="buttons">
-        <router-link to="/" class="button primary">
+        <RouterLink to="/" class="button primary">
           <HomeFlagIcon class="icon" />
           <div class="text">
             <h4>Revenir en terrain connu</h4>
-            <p>D&apos;ailleurs, pourquoi ne pas en profiter votre propre partie ?</p>
+            <p>D&apos;ailleurs, pourquoi ne pas en profiter pour créer votre propre partie ?</p>
           </div>
-        </router-link>
+        </RouterLink>
       </div>
     </div>
   </main>
@@ -19,10 +19,11 @@
 
 <script>
 import HomeFlagIcon from "@/components/svgs/HomeFlagIcon.vue";
+import RouterLink from "@/components/router-link.vue";
 
 export default {
   name: 'HomeView',
-  components: {HomeFlagIcon},
+  components: {HomeFlagIcon, RouterLink},
   methods: {},
 };
 </script>
@@ -130,7 +131,7 @@ export default {
         flex-direction: column;
 
         .button {
-          width: 100%;
+          width: 90%;
           margin: 0;
           margin-top: 1em;
 
@@ -150,6 +151,25 @@ export default {
 @media screen and (max-width: 400px) {
   .main {
     .content {
+      max-width: 100%;
+
+      .buttons {
+        flex-direction: column;
+
+        .button {
+          width: 90%;
+          margin: 0;
+          margin-top: 1em;
+
+          h4 {
+            font-size: 2em;
+          }
+
+          p {
+            font-size: 1.5em;
+          }
+        }
+      }
 
       .title {
         font-size: 2.5em;

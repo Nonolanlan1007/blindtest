@@ -24,10 +24,10 @@
     <PopUp name="joinGame">
       <h1>Rejoindre une partie</h1>
       <p>Entrez le code de la partie à laquelle vous souhaitez participer.</p>
-      <input type="text" placeholder="XXXXXX" />
+      <input type="text" placeholder="XXXXXX" v-model="code" />
       <p>Sous quel nom souhaitez-vous rejoindre la partie ?</p>
-      <input type="text" placeholder="Michael Jackson" />
-      <button class="button">Rejoindre</button>
+      <input type="text" placeholder="Michael Jackson" v-model="username" />
+      <button @click="joinGame" class="button">Rejoindre</button>
     </PopUp>
   </main>
 </template>
@@ -38,21 +38,47 @@ import ComputerIcon from "@/components/svgs/ComputerIcon.vue";
 import PhoneIcon from "@/components/svgs/PhoneIcon.vue";
 import config from "@/assets/config";
 import PopUp from "@/components/PopUp.vue";
+import Router from "@/router";
 
 export default {
   name: 'HomeView',
   components: {PopUp, PhoneIcon, ComputerIcon},
+  data() {
+    return {
+      username: "",
+      code: null,
+      router: new Router()
+    }
+  },
   methods: {
     async createGame() {
       const {data} = await axios.post(`${config.api}/api/games`)
 
-      if (data) this.$router.push(`/game/${data.id}`)
+      if (data) this.router.go(`/game/${data.id}`)
     },
     openJoinGamePopUp () {
       const popup = document.getElementById("joinGame")
-      if (popup) popup.showModal()
+      if (popup) popup.style.display = "block"
+      else console.error("PopUp not found")
+    },
+    joinGame () {
+      if (!this.username || !this.code) return alert("Veuillez remplir tous les champs")
+      this.router.go(`/game/${this.code}/?username=${this.username}`)
     }
   },
+  mounted () {
+    const code = this.router.route().params.get('join')
+    if (code) {
+      this.code = code
+      this.openJoinGamePopUp()
+    }
+    const error = this.router.route().params.get('error')
+    if (error) {
+      if (error === "name_already_taken") alert("Ce nom d'utilisateur est déjà utilisé !")
+      if (error === "kicked") alert("Vous avez été expulsé de la partie !");
+      this.router.go(`/?error=&join=${this.code}`)
+    }
+  }
 };
 </script>
 

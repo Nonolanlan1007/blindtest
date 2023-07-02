@@ -1,24 +1,6 @@
-# blindtest-vuejs
+# Blind Test
 
-## Project setup
-```
-npm install
-```
+## Crédits
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Musique d'attente : Wallpaper by Kevin MacLeod | https://incompetech.com/ - Music promoted by https://www.chosic.com/free-music/all/ - Creative Commons CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
+ 

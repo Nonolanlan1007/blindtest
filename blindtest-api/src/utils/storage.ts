@@ -1,33 +1,8 @@
-const storage = new Map<string, GameStructure>()
+import { WebSocket } from "ws";
+import { GameConnectionsStructure, GameStructure } from "./types";
 
-type GameStructure = {
-    id: string,
-    players: {
-        name: string,
-        avatar?: string, // chemin d'accès à l'avatar (undefined si pas d'avatar)
-        points: number
-    }[],
-    state: "waiting_players" | "waiting_songs" | "playing" | "end",
-    songs: {
-        title: string,
-        artist: string,
-        downloaded: boolean,
-        path?: string
-    }[],
-    settings: {
-        gameMode: "classic" | "firstnote",
-        maxPlayers: number,
-        winPointsOnSelfAddedSongs: boolean,
-        songsLimitPerPlayer: number,
-        pointsOnWin: {
-            title: number,
-            artist: number,
-            bonus: number
-        },
-        penaltyOnWrongAnswer: boolean,
-        banExplicitSongs: boolean
-    }
-}
+const games = new Map<string, GameStructure>()
+const connections = new Map<string, GameConnectionsStructure>()
 
 const defaultGameData = {
     id: "",
@@ -46,40 +21,39 @@ const defaultGameData = {
         },
         penaltyOnWrongAnswer: true,
         banExplicitSongs: false
-    }
+    },
+    connections: []
 } as GameStructure
 
 export function createGame (code: string) {
-    if (storage.has(`game-${code}`)) return undefined;
+    if (games.has(`game-${code}`)) return undefined;
 
-    let gameData = {
-        ...defaultGameData,
-        id: code
-    }
+    let gameData = JSON.parse(JSON.stringify(defaultGameData));
+    gameData.id = code;
 
-    storage.set(`game-${code}`, gameData)
+    games.set(`game-${code}`, gameData)
 
     return gameData
 }
 
 export function getGame (code: string) {
-    if (!storage.has(`game-${code}`)) return undefined;
+    if (!games.has(`game-${code}`)) return undefined;
 
-    return storage.get(`game-${code}`)
+    return games.get(`game-${code}`)
 }
 
 export function deleteGame (code: string) {
-    if (!storage.has(`game-${code}`)) return false;
+    if (!games.has(`game-${code}`)) return false;
 
-    storage.delete(`game-${code}`)
+    games.delete(`game-${code}`)
 
     return true
 }
 
 export function addPlayer (code: string, name: string, avatar?: string) {
-    if (!storage.has(`game-${code}`)) return false;
+    if (!games.has(`game-${code}`)) return false;
 
-    let gameData = storage.get(`game-${code}`)
+    let gameData = games.get(`game-${code}`)
 
     if (!gameData || gameData.players.length >= gameData.settings.maxPlayers || gameData.players.find(x => x.name === name)) return false;
 
@@ -93,13 +67,38 @@ export function addPlayer (code: string, name: string, avatar?: string) {
 }
 
 export function removePlayer (code: string, name: string) {
-    if (!storage.has(`game-${code}`)) return false;
+    if (!games.has(`game-${code}`)) return false;
 
-    let gameData = storage.get(`game-${code}`)
+    let gameData = games.get(`game-${code}`)
 
     if (!gameData) return false;
 
     gameData.players = gameData.players.filter(player => player.name !== name)
 
     return true
+}
+
+export function addConnection (code: string, ws: WebSocket) {
+    if (!games.has(`game-${code}`)) return false;
+
+    let Connections = connections.get(`connections-${code}`)
+
+    if (!Connections) return connections.set(`connections-${code}`, {
+        gameId: code,
+        connections: [ws]
+    })
+
+    Connections.connections.push(ws)
+
+    return true
+}
+
+export function getConnections (code: string): GameConnectionsStructure["connections"] | false {
+    if (!games.has(`game-${code}`)) return false;
+
+    let Connections = connections.get(`connections-${code}`)
+
+    if (!Connections) return false;
+
+    return Connections.connections
 }

@@ -1,0 +1,13 @@
+@keyframes PopOut {
+  0% {
+    transform-origin: center;
+    scale: 0;
+  }
+  75% {
+    transform-origin: center;
+    scale: 1.2;
+  }
+  100% {
+    scale: 1;
+  }
+}

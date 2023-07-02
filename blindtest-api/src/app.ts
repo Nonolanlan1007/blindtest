@@ -6,9 +6,15 @@ import {createServer} from "http";
 import morgan from "morgan";
 import path from "path";
 import cors from "cors";
+import {Server} from "ws";
+import { createWS } from "./utils/websocket";
 
 const app = express();
 const server = createServer(app);
+const websocket = new Server({
+  server,
+  maxPayload: 1024 * 1024 * 10
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -17,6 +23,13 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/../public'));
 app.set('views', path.join(__dirname, '/views'));
 app.use(cors());
+
+app.use((req, _res, next) => {
+  req.app.locals.ws = websocket;
+  next();
+});
+
+createWS(websocket);
 
 function readDirectory(directory: string) {
   fs.readdirSync(directory, { withFileTypes: true }).forEach(async (file) => {

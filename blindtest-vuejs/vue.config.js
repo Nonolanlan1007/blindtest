@@ -6,7 +6,7 @@ module.exports = defineConfig({
     sourceMap: false,
     loaderOptions: {
       sass: {
-        additionalData: `@import "@/assets/_colors.scss";`
+        additionalData: `@import "@/assets/_colors.scss"; @import "@/assets/_animations.scss";`
       }
     }
   }
