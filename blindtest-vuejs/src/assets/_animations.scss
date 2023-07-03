@@ -11,3 +11,14 @@
     scale: 1;
   }
 }
+
+@keyframes GameStateChange {
+  0% {
+    transform-origin: right;
+    opacity: 0;
+  }
+  100% {
+    transform-origin: right;
+    opacity: 1;
+  }
+}

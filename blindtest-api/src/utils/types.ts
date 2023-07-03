@@ -12,7 +12,8 @@ export interface GameStructure {
         title: string,
         artist: string,
         downloaded: boolean,
-        path?: string
+        path?: string,
+        addedBy: string
     }[],
     settings: {
         gameMode: "classic" | "firstnote",
