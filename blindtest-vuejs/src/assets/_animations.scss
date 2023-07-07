@@ -22,3 +22,16 @@
     opacity: 1;
   }
 }
+
+@keyframes DropDown {
+  0% {
+    transform-origin: top;
+    opacity: 0;
+    height: 0;
+  }
+  100% {
+    transform-origin: top;
+    opacity: 1;
+    height: auto;
+  }
+}

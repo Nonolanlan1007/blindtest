@@ -1,8 +1,9 @@
 import { green } from "colors";
 import { Server } from "ws"
 import { addConnection, addPlayer, getConnections, getGame, removePlayer } from "./storage";
-import { GameState, GameStructure, WSMessageStructure } from "./types";
+import { GameState, WSMessageStructure } from "./types";
 import e from "express";
+import { search } from "./songs";
 
 export async function createWS (ws: Server) {
     ws.on("connection", (websocket, req) => {
@@ -18,10 +19,17 @@ export async function createWS (ws: Server) {
             
             if (url[0] === "games" && getGame(url[1])) {
                 handleMessage(message.toString()).then((response) => {
-                    websocket.send(JSON.stringify({
-                        type: "GAME",
-                        data: response
-                    }))
+                    if (response.type === "GAME") {
+                        websocket.send(JSON.stringify({
+                            type: "GAME",
+                            data: response.data
+                        }))
+                    } else if (response.type === "RESULTS") {
+                        websocket.send(JSON.stringify({
+                            type: "RESULTS",
+                            data: response.data
+                        }))
+                    }
                 }).catch((error) => {
                     websocket.send(JSON.stringify({
                         type: "ERROR",
@@ -42,7 +50,7 @@ export async function createWS (ws: Server) {
     })
 }
 
-async function handleMessage (message: string): Promise<GameStructure> {
+async function handleMessage (message: string): Promise<any> {
     const body: WSMessageStructure = JSON.parse(message)
     if (!body) throw new Error("Invalid message");
 
@@ -50,7 +58,23 @@ async function handleMessage (message: string): Promise<GameStructure> {
         if (body.value === "GAME") {
             const game = getGame(body.data.id);
             if (!game) throw new Error("Unknown game");
-            return game;
+            return { data: game, type: "GAME" };
+        } else if (body.value === "RESULTS") {
+            const game = getGame(body.data.id);
+            if (!game) throw new Error("Unknown game");
+            if (game.state !== "waiting_songs") throw new Error("Game is not in waiting_songs state");
+
+            const results = await search({
+                q: body.data.query,
+                type: "track",
+                limit: 5
+            }).catch((error) => {
+                throw new Error(error.message)
+            })
+
+            console.log(results)
+
+            return { data: results, type: "RESULTS" };
         } else throw new Error("Invalid request");
     } else if (body.method === "JOIN") {
         if (body.data.id && body.data.name && body.data.avatar) {
@@ -65,7 +89,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
                 if (!game) throw new Error("Unknown game")
                 
                 const connections = getConnections(body.data.id);
-                if (!connections) return game;
+                if (!connections) return { data: game, type: "GAME" };
 
                 connections.forEach((connection) => {
                     connection.send(JSON.stringify({
@@ -74,7 +98,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
                     }))
                 })
 
-                return game;
+                return { data: game, type: "GAME" };
             } else throw new Error("Unknown game");
         } else throw new Error("Invalid request");
     } else if (body.method === "UPDATE") {
@@ -86,7 +110,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
                 game.settings = body.data.settings;
 
                 const connections = getConnections(body.data.id);
-                if (!connections) return game;
+                if (!connections) return { data: game, type: "GAME" };
 
                 connections.forEach((connection) => {
                     connection.send(JSON.stringify({
@@ -95,7 +119,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
                     }))
                 })
                 
-                return game;
+                return { data: game, type: "GAME" };
             } else throw new Error("Unknown game");
         } else if (body.value === 'STATE') {
             let game = getGame(body.data.id);
@@ -105,7 +129,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
             game.state = state;
 
             const connections = getConnections(body.data.id);
-            if (!connections) return game;
+            if (!connections) return { data: game, type: "GAME" };
 
             connections.forEach((connection) => {
                 connection.send(JSON.stringify({
@@ -114,7 +138,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
                 }))
             })
 
-            return game;
+            return { data: game, type: "GAME" };
         } else throw new Error("Invalid request");
     } else if (body.method === "DELETE") {
         if (body.value === "PLAYER") {
@@ -126,7 +150,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
             const connections = getConnections(body.data.id);
             game = getGame(body.data.id);
             if (!game) throw new Error("Unknown game");
-            if (!connections) return game;
+            if (!connections) return { data: game, type: "GAME" };
 
             connections.forEach((connection) => {
                 connection.send(JSON.stringify({
@@ -135,7 +159,7 @@ async function handleMessage (message: string): Promise<GameStructure> {
                 }))
             })
 
-            return game;
+            return { data: game, type: "GAME" };
         } else throw new Error("Invalid request");
     } else throw new Error("Invalid request");
 }

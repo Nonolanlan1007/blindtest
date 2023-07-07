@@ -8,6 +8,7 @@ import path from "path";
 import cors from "cors";
 import {Server} from "ws";
 import { createWS } from "./utils/websocket";
+import { search } from "./utils/songs";
 
 const app = express();
 const server = createServer(app);

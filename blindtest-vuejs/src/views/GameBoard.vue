@@ -39,13 +39,24 @@
       <h1 class="title">Blindtest</h1>
       <h2 class="subtitles">Il est temps d'ajouter les chansons que vous souhaitez voir dans ce quizz ! Attention, vous disposez d'une limite de {{ game.settings.songsLimitPerPlayer }} musique{{ game.songs.find(x => x.addedBy === username) ? ` et vous en avez déjà ajouté ${game.songs.filter(x => x.addedBy === username).length}` : "" }}.</h2>
       <h3 v-if="!game.settings.winPointsOnSelfAddedSongs" class="subtitles">⚠️ RAPPEL : Le maître du jeu a décidé que vous ne pourrez pas gagner de points sur les chansons que vous ajoutez !</h3>
-      <input type="text" placeholder="Ajouter une musique" />
-      <button class="button">Rechercher</button>
+      <input type="text" placeholder="Ajouter une musique" v-model="songSearch" @input="() => searchResults = []" />
+      <div v-if="searchResults.length > 0" class="search_results">
+        <p>Résultats de la recherche pour "{{ songSearch }}" :</p>
+        <div v-for="result in searchResults.slice(0, 5)" class="result" :key="result.id.videoId">
+          <img v-if="result.album.images[0]" :src="result.album.images[0].url" :alt="result.name" class="album" />
+          <div class="infos">
+            <h3 class="title">{{ result.name }}</h3>
+            <h4 class="artist">{{ result.artists.map(x => x.name).join(", ") }}</h4>
+          </div>
+        </div>
+      </div>
+      <button class="button" @click="findResults">Rechercher</button>
     </div>
   </main>
 
   <!-- Songs -->
   <audio v-if="game && isHost && ['waiting_players', 'waiting_songs'].includes(game.state)" autoplay loop preload="auto" src="/waiting_song.mp3" />
+  <YoutubeVue3 v-if="isHost === 'lol'" ref="player" videoid="aqqQRuO_UK0" width="0" height="0" autoplay="1" />
 </template>
 
 <script>
@@ -55,6 +66,7 @@ import Router from "@/router";
 import MinusIcon from "@/components/svgs/MinusIcon.vue";
 import PlusIcon from "@/components/svgs/PlusIcon.vue";
 import TrashIcon from "@/components/svgs/TrashIcon.vue";
+import { YoutubeVue3 } from "youtube-vue3";
 
 export default {
   name: 'GameBoard',
@@ -69,10 +81,13 @@ export default {
       ws: null,
       router: new Router(),
       isHost: false,
-      username: this.$store.username
+      username: this.$store.username,
+      songSearch: "",
+      searchResults: [],
+      player: null
     }
   },
-  components: {TrashIcon, PlusIcon, MinusIcon, QrCode},
+  components: {TrashIcon, PlusIcon, MinusIcon, QrCode, YoutubeVue3},
   methods: {
     copyLink () {
       navigator.clipboard.writeText(`${config.website}/?join=${this.game.id}`)
@@ -115,7 +130,19 @@ export default {
           state: "waiting_songs"
         }
       }))
-    }
+    },
+    findResults () {
+      if (!this.songSearch) return;
+
+      this.ws.send(JSON.stringify({
+        method: "GET",
+        value: "RESULTS",
+        data: {
+          id: this.game.id,
+          query: this.songSearch
+        }
+      }))
+    },
   },
   async mounted() {
     const id = this.router.route().routes.reverse()[0].toUpperCase()
@@ -149,8 +176,9 @@ export default {
         this.game = res.data
 
         if (!this.isHost && this.$store.username && !this.game.players.find(player => player.name === this.$store.username)) this.router.go(`/?error=kicked&join=${id}`)
-      }
-      if (res.type === "ERROR") {
+      } else if (res.type === "RESULTS") {
+        this.searchResults = res.data
+      } else if (res.type === "ERROR") {
         if (res.data.message === "Unknown game") this.router.go("/404")
         else if (res.data.message === "Name already taken") this.router.go(`/?error=name_already_taken&join=${id}`)
         else {
@@ -455,6 +483,81 @@ export default {
       }
     }
 
+    .button {
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 1em;
+      padding: .5em 1em;
+      font-size: 1em;
+      margin-top: 1em;
+      cursor: pointer;
+      transition: all .25s ease-in-out;
+      animation: PopOut .5s;
+
+      &:hover {
+        scale: 1.1;
+      }
+    }
+
+    .search_results {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      overflow: hidden;
+      padding: 1em;
+      background: $secondary-color;
+      border-bottom-left-radius: 1em;
+      border-bottom-right-radius: 1em;
+      transform-origin: top;
+      animation: DropDown .5s;
+      border-left: 2px solid $primary-color;
+      border-right: 2px solid $primary-color;
+      border-bottom: 2px solid $primary-color;
+
+      .result {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: .5em;
+        border-top: 2px solid $primary-color;
+        transition: all .25s ease-in-out;
+        overflow: hidden;
+
+        &:hover {
+          scale: 1.1;
+        }
+
+        .album {
+          width: 7em;
+          border-radius: .25em;
+        }
+
+        .infos {
+          .title {
+            font-size: 1.5em;
+            text-align: left;
+            margin-block: 0;
+            margin-inline: 0;
+            font-family: 'Bungee', sans-serif;
+            margin-left: 1em;
+          }
+
+          .artist {
+            font-size: 1.25em;
+            text-align: left;
+            margin-block: 0;
+            margin-inline: 0;
+            font-family: 'Bungee', sans-serif;
+            margin-left: 1em;
+          }
+        }
+      }
+    }
+
     .title {
       font-size: 4em;
       text-align: center;
@@ -471,7 +574,19 @@ export default {
     }
 
     @media (max-width: 1000px) {
-      max-width: 100%;
+      max-width: 90%;
+
+      input[type="text"] {
+        max-width: 90%;
+      }
+
+      .title {
+        font-size: 2.5em;
+      }
+
+      .subtitles {
+        font-size: 1.5em;
+      }
     }
   }
 }
