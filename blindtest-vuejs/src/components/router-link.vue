@@ -1,6 +1,9 @@
 <template>
-  <div class="router-link" @click="go">
-      <slot></slot>
+  <div
+    class="router-link"
+    @click="go"
+  >
+    <slot />
   </div>
 </template>
 

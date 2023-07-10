@@ -8,20 +8,16 @@
 import HomeView from "@/views/HomeView.vue";
 import GameBoard from "@/views/GameBoard.vue";
 import NotFound from "@/views/NotFound.vue";
-import Router from "@/router";
+import Router from "@/router.js";
 
 export default {
-  name: 'App',
-  components: {
-    HomeView,
-    GameBoard,
-    NotFound
-  },
-  data () {
+  name: "App",
+  components: { HomeView, GameBoard, NotFound },
+  data() {
     return {
-      router: new Router()
-    }
-  }
+      router: new Router(),
+    };
+  },
 }
 </script>
 
@@ -37,6 +33,7 @@ body {
   padding: 0 1em;
   background: linear-gradient(142deg, #ff6065, #ffb2f5, #ffec9d) no-repeat;
   background-size: 600% 600%;
+  overflow: hidden;
 }
 
 /*html {
@@ -45,6 +42,13 @@ body {
 }*/
 
 ::-webkit-scrollbar {
-  width: 0;
+  width: .5rem;
+  border-radius: 10px;
+  background-color: $tertiary-color;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: $primary-color;
+  border-radius: 10px;
 }
 </style>

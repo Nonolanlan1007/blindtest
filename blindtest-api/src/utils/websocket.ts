@@ -3,7 +3,7 @@ import { Server } from "ws"
 import { addConnection, addPlayer, getConnections, getGame, removePlayer } from "./storage";
 import { GameState, WSMessageStructure } from "./types";
 import e from "express";
-import { search } from "./songs";
+import { findVideoId, search } from "./songs";
 
 export async function createWS (ws: Server) {
     ws.on("connection", (websocket, req) => {
@@ -22,7 +22,8 @@ export async function createWS (ws: Server) {
                     if (response.type === "GAME") {
                         websocket.send(JSON.stringify({
                             type: "GAME",
-                            data: response.data
+                            data: response.data,
+                            songId: response.songId
                         }))
                     } else if (response.type === "RESULTS") {
                         websocket.send(JSON.stringify({
@@ -64,7 +65,7 @@ async function handleMessage (message: string): Promise<any> {
             if (!game) throw new Error("Unknown game");
             if (game.state !== "waiting_songs") throw new Error("Game is not in waiting_songs state");
 
-            const results = await search({
+            let results = await search({
                 q: body.data.query,
                 type: "track",
                 limit: 5
@@ -72,7 +73,7 @@ async function handleMessage (message: string): Promise<any> {
                 throw new Error(error.message)
             })
 
-            console.log(results)
+            if (game.settings.banExplicitSongs) results = results.filter((result: any) => !result.explicit)
 
             return { data: results, type: "RESULTS" };
         } else throw new Error("Invalid request");
@@ -160,6 +161,42 @@ async function handleMessage (message: string): Promise<any> {
             })
 
             return { data: game, type: "GAME" };
+        } else throw new Error("Invalid request");
+    } else if (body.method === "ADD") {
+        if (body.value === "SONG") {
+            const game = getGame(body.data.id);
+            if (!game) throw new Error("Unknown game");
+
+            if (game.state !== "waiting_songs") throw new Error("Game is not in waiting_songs state");
+
+            const videoId = await findVideoId(`${body.data.artist} ${body.data.title}`).catch((error) => {
+                throw new Error(error.message)
+            });
+
+            if (!videoId) throw new Error("No video found");
+            if (game.songs.find(x => x.videoId === videoId)) throw new Error("Song already added");
+
+            game.songs.push({
+                videoId: videoId,
+                title: body.data.title,
+                artist: body.data.artist,
+                addedBy: body.data.user,
+                cover: body.data.cover,
+                explicit: body.data.explicit
+            })
+
+            const connections = getConnections(body.data.id);
+
+            if (!connections) return { data: game, type: "GAME", songId: body.data.songId };
+
+            connections.forEach((connection) => {
+                connection.send(JSON.stringify({
+                    type: "GAME",
+                    data: game
+                }))
+            })
+
+            return { data: game, type: "GAME", songId: body.data.songId };
         } else throw new Error("Invalid request");
     } else throw new Error("Invalid request");
 }

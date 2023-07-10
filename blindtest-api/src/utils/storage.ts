@@ -19,7 +19,7 @@ const defaultGameData = {
             artist: 1,
             bonus: 1
         },
-        penaltyOnWrongAnswer: true,
+        penaltyOnWrongAnswer: 2,
         banExplicitSongs: false
     },
     connections: []

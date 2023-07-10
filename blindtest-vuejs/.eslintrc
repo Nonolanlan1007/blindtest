@@ -1,0 +1,12 @@
+{
+  "root": true,
+  "parser": "vue-eslint-parser",
+  "extends": [
+    "plugin:vue/strongly-recommended",
+    "eslint:recommended"
+  ],
+  "rules": {
+    "vue/no-multiple-template-root": "off",
+    "vue/max-attributes-per-line": "off"
+  }
+}

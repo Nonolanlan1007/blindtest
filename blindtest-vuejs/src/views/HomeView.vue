@@ -1,8 +1,12 @@
 <template>
   <main class="main">
     <div class="content">
-      <h1 class="title">Blindtest</h1>
-      <h2 class="subtitle">LE jeu de devinettes musicales entre amis et en famille !</h2>
+      <h1 class="title">
+        Blindtest
+      </h1>
+      <h2 class="subtitle">
+        LE jeu de devinettes musicales entre amis et en famille !
+      </h2>
 
       <div class="buttons">
         <button class="button primary" @click="createGame">
@@ -24,10 +28,12 @@
     <PopUp name="joinGame">
       <h1>Rejoindre une partie</h1>
       <p>Entrez le code de la partie à laquelle vous souhaitez participer.</p>
-      <input type="text" placeholder="XXXXXX" v-model="code" />
+      <input type="text" placeholder="XXXXXX" v-model="code">
       <p>Sous quel nom souhaitez-vous rejoindre la partie ?</p>
-      <input type="text" placeholder="Michael Jackson" v-model="username" />
-      <button @click="joinGame" class="button">Rejoindre</button>
+      <input type="text" placeholder="Michael Jackson" v-model="username">
+      <button @click="joinGame" class="button">
+        Rejoindre
+      </button>
     </PopUp>
   </main>
 </template>
@@ -41,8 +47,8 @@ import PopUp from "@/components/PopUp.vue";
 import Router from "@/router";
 
 export default {
-  name: 'HomeView',
-  components: {PopUp, PhoneIcon, ComputerIcon},
+  name: "HomeView",
+  components: { ComputerIcon, PhoneIcon, PopUp },
   data() {
     return {
       username: "",

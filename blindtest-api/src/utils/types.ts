@@ -11,9 +11,10 @@ export interface GameStructure {
     songs: {
         title: string,
         artist: string,
-        downloaded: boolean,
-        path?: string,
-        addedBy: string
+        videoId?: string,
+        addedBy: string,
+        cover?: string,
+        explicit: boolean
     }[],
     settings: {
         gameMode: "classic" | "firstnote",
@@ -25,7 +26,7 @@ export interface GameStructure {
             artist: number,
             bonus: number
         },
-        penaltyOnWrongAnswer: boolean,
+        penaltyOnWrongAnswer: number,
         banExplicitSongs: boolean
     }
 }

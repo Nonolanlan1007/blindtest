@@ -1,11 +1,18 @@
 <template>
   <main class="main">
     <div class="content">
-      <h1 class="title">Erreur 404</h1>
-      <h2 class="subtitle">Partie introuvable !</h2>
+      <h1 class="title">
+        Erreur 404
+      </h1>
+      <h2 class="subtitle">
+        Partie introuvable !
+      </h2>
 
       <div class="buttons">
-        <RouterLink to="/" class="button primary">
+        <RouterLink
+          to="/"
+          class="button primary"
+        >
           <HomeFlagIcon class="icon" />
           <div class="text">
             <h4>Revenir en terrain connu</h4>
@@ -22,10 +29,9 @@ import HomeFlagIcon from "@/components/svgs/HomeFlagIcon.vue";
 import RouterLink from "@/components/router-link.vue";
 
 export default {
-  name: 'HomeView',
-  components: {HomeFlagIcon, RouterLink},
-  methods: {},
-};
+  name: "NotFound",
+  components: { HomeFlagIcon, RouterLink },
+}
 </script>
 
 <style lang="scss">

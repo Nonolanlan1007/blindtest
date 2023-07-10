@@ -12,8 +12,6 @@ export async function search (options: SpotifySearchOptions): Promise<any> {
     })
 
     const res = await SpotifyClient.search(options)
-    
-    console.log(res)
 
     return res.tracks.items
 
@@ -24,4 +22,19 @@ export async function search (options: SpotifySearchOptions): Promise<any> {
     // if (res.status !== 200) throw new Error(res.data.error)
 
     // return res.data;
+}
+
+export async function findVideoId (query: string): Promise<string | undefined> {
+    const res = await axios.get(`https://www.googleapis.com/youtube/v3/search`, {
+        params: {
+            key: process.env.YOUTUBE_TOKEN,
+            part: "snippet",
+            q: `${query} lyrics`,
+            type: "video"
+        }
+    })
+
+    if (res.status !== 200) throw new Error(res.data.error)
+
+    return res.data.items[0].id.videoId;
 }
