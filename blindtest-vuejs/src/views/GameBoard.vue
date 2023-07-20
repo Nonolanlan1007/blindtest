@@ -30,7 +30,7 @@
       <p>
         Nombre de places restantes : <MinusIcon class="icon" @click="addSlot(-1)" /> {{ game.settings.maxPlayers - game.players.length }} <PlusIcon class="icon" @click="addSlot(1)" />
       </p>
-      <button v-if="game.players.length > 0" @click="startGame" class="button">
+      <button v-if="game.players.length > 0" @click="setState('waiting_songs')" class="button">
         Commencer la partie
       </button>
     </footer>
@@ -47,6 +47,9 @@
           {{ game.songs.filter(song => song.addedBy === player.name).length }}/{{ game.settings.songsLimitPerPlayer }}
         </h2>
       </div>
+      <button v-if="game.players.filter(player => game.songs.filter(song => song.addedBy === player.name).length < game.settings.songsLimitPerPlayer).length === 0" class="button" @click="setState('playing')">
+        Commencer la partie
+      </button>
     </div>
     <div v-if="isHost" class="right">
       <h1 class="title">
@@ -236,7 +239,9 @@ export default {
       setTimeout(() => code.classList.remove("copied"), 1000)
     },
     addSlot (count) {
-      if (this.game.settings.maxPlayers + count > 25) return;
+      if (this.game.settings.maxPlayers + count > 10) return;
+
+      if (this.game.settings.maxPlayers + count < 0) return;
 
       this.ws.send(JSON.stringify({
         method: "UPDATE",
@@ -260,13 +265,15 @@ export default {
         }
       }))
     },
-    startGame () {
+    setState (state) {
+      if (!['waiting_players', 'waiting_songs', 'playing', 'end'].includes(state)) return;
+
       this.ws.send(JSON.stringify({
         method: "UPDATE",
         value: "STATE",
         data: {
           id: this.game.id,
-          state: "waiting_songs"
+          state: state
         }
       }))
     },
@@ -602,7 +609,6 @@ export default {
     width: 75%;
     flex-wrap: wrap;
     height: 50vh;
-    overflow-y: scroll;
 
     .player {
       display: flex;
@@ -712,8 +718,6 @@ export default {
     align-items: center;
     width: 45%;
     margin-left: 1em;
-    overflow-y: scroll;
-    overflow-x: hidden;
     height: 90vh;
 
     .player {
@@ -728,7 +732,7 @@ export default {
       width: 90%;
       position: relative;
       overflow: hidden;
-      min-height: 3em;
+      min-height: 1em;
 
 
       .avatar {
@@ -764,6 +768,24 @@ export default {
         height: 15px;
         background-color: $primary-color;
         transition: all 1s ease;
+      }
+    }
+
+    .button {
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 1em;
+      padding: .5em 1em;
+      font-size: 1em;
+      margin: 0;
+      margin-inline: 1em;
+      cursor: pointer;
+      transition: all .25s ease-in-out;
+      animation: PopOut .5s;
+
+      &:hover {
+        scale: 1.1;
       }
     }
   }

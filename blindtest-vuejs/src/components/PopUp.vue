@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="back"
-    :id="name"
-  >
+  <div class="back" :id="name">
     <div class="popup">
       <slot />
     </div>

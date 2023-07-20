@@ -11,7 +11,7 @@ const defaultGameData = {
     songs: [],
     settings: {
         gameMode: "classic",
-        maxPlayers: 25,
+        maxPlayers: 10,
         winPointsOnSelfAddedSongs: true,
         songsLimitPerPlayer: 5,
         pointsOnWin: {
