@@ -1,5 +1,5 @@
 export default {
-  api: "http://46.105.48.77:3002",
+  api: "https://blindtest-api.discordanalytics.xyz",
   website: "https://https://blind-test.vercel.app/",
-  ws: "ws://46.105.48.77:3002",
+  ws: "wss://blindtest-api.discordanalytics.xyz",
 }
