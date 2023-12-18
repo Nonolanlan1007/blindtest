@@ -35,3 +35,51 @@
     height: auto;
   }
 }
+
+@keyframes count {
+  0% {
+    transform-origin: center;
+    scale: 0;
+    content: "3"
+  }
+  24% {
+    transform-origin: center;
+    scale: 1.1;
+    content: "3"
+  }
+  25% {
+    transform-origin: center;
+    scale: 1;
+    content: "3"
+  }
+  49% {
+    transform-origin: center;
+    scale: 1.1;
+    content: "2"
+  }
+  50% {
+    transform-origin: center;
+    scale: 1;
+    content: "2"
+  }
+  74% {
+    transform-origin: center;
+    scale: 1.1;
+    content: "1"
+  }
+  75% {
+    transform-origin: center;
+    scale: 1;
+    content: "1"
+  }
+  99% {
+    transform-origin: center;
+    scale: 1.1;
+    content: "GO!"
+  }
+  100% {
+    transform-origin: center;
+    scale: 0;
+    content: "GO!"
+  }
+}

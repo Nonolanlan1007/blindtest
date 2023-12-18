@@ -35,7 +35,6 @@
       </button>
     </footer>
   </main>
-
   <main v-if="game && game.state === 'waiting_songs'" class="game_config">
     <div v-if="isHost" class="left" ref="left">
       <div v-for="player in game.players" class="player" :key="player.name" :style="{ '--progress-width': `${Math.round(game.songs.filter(x => x.addedBy === player.name).length * 100 / game.settings.songsLimitPerPlayer)}%` }">
@@ -66,7 +65,7 @@
         <div class="selector">
           <div :class="`choice${game.settings.gameMode === 'classic' ? ' selected' : ''}`" @click="setGameMode('classic')">
             <h5>Classique</h5>
-            <p>Prenez tout votre temps pour trouver la bonne réponse</p>
+            <p>Vous avez un extrait de 30s secondes pour trouver la bonne réponse</p>
           </div>
           <div :class="`choice${game.settings.gameMode === 'firstnote' ? ' selected' : ''}`" @click="setGameMode('firstnote')">
             <h5>Première note</h5>
@@ -174,7 +173,7 @@
       <input type="text" placeholder="Ajouter une musique" v-model="songSearch" @input="() => searchResults = []">
       <div v-if="searchResults.length > 0 && game.songs.filter(x => x.addedBy === this.$store.username).length < game.settings.songsLimitPerPlayer" class="search_results">
         <p>Résultats de la recherche pour "{{ songSearch }}" :</p>
-        <div v-for="result in searchResults.slice(0, 5)" class="result" :key="result.name" @click="addSong(result.name, result.artists.map(x => x.name).join(', '), result.album.images[0].url, result.explicit, result.id)" :id="result.id">
+        <div v-for="result in searchResults.slice(0, 5)" class="result" :key="result.name" @click="addSong(result.name, result.artists.map(x => x.name).join(', '), result.album.images[0].url, result.explicit, result.id, result.preview_url)" :id="result.id">
           <img v-if="result.album.images[0]" :src="result.album.images[0].url" :alt="result.name" class="album">
           <div class="infos">
             <h3 class="title">
@@ -195,10 +194,21 @@
     </div>
   </main>
 
+  <main v-if="game && game.state === 'playing' && isHost" class="game_board">
+    <div id="count" />
+    <div id="listening">
+      <h1>En écoute...</h1>
+      <h3>Vous avez la bonne réponse ?</h3>
+      <h3>Cliquez sur le bouton de votre téléphone !</h3>
+      <Vue3Lottie :animation-data="listening_lottie" alt="Listening" class="gif" />
+    </div>
+  </main>
+  <main v-if="game && game.state === 'playing' && !isHost" class=""></main>
+
   <!-- Songs -->
   <audio v-if="game && isHost && ['waiting_players', 'waiting_songs'].includes(game.state)" autoplay loop preload="auto" src="/waiting_song.mp3" id="waitingSong" />
   <audio preload="auto" src="/welcome.mp3" id="welcomeSound" />
-  <YoutubeVue3 v-if="isHost === 'lol'" ref="player" videoid="aqqQRuO_UK0" width="0" height="0" autoplay="1" />
+  <audio preload="auto" src="/start.mp3" id="player" ref="player" />
 </template>
 
 <script>
@@ -208,8 +218,9 @@ import Router from "@/router";
 import MinusIcon from "@/components/svgs/MinusIcon.vue";
 import PlusIcon from "@/components/svgs/PlusIcon.vue";
 import TrashIcon from "@/components/svgs/TrashIcon.vue";
-import { YoutubeVue3 } from "youtube-vue3";
 import RouterLink from "@/components/router-link.vue";
+import listening_lottie from "@/assets/listening_lottie.json";
+import { Vue3Lottie } from "vue3-lottie";
 
 export default {
   name: 'GameBoard',
@@ -226,10 +237,12 @@ export default {
       isHost: false,
       songSearch: "",
       searchResults: [],
-      player: null
+      player: this.$refs.player,
+      songIndex: 0,
+      listening_lottie
     }
   },
-  components: { RouterLink, TrashIcon, PlusIcon, MinusIcon, QrCode, YoutubeVue3},
+  components: { Vue3Lottie, RouterLink, TrashIcon, PlusIcon, MinusIcon, QrCode},
   methods: {
     copyLink () {
       navigator.clipboard.writeText(`${config.website}/?join=${this.game.id}`)
@@ -289,7 +302,7 @@ export default {
         }
       }))
     },
-    addSong(title, artist, cover, explicit, id) {
+    addSong(title, artist, cover, explicit, id, url) {
       this.ws.send(JSON.stringify({
         method: "ADD",
         value: "SONG",
@@ -300,7 +313,8 @@ export default {
           artist,
           cover,
           explicit,
-          songId: id
+          songId: id,
+          url
         }
       }))
     },
@@ -487,6 +501,19 @@ export default {
           }
         }
 
+        if (res.data.state === 'playing' && res.data.state !== this.game.state && this.isHost) {
+          this.$refs.player.play()
+          setTimeout(() => {
+            this.$refs.player.addEventListener("play", () => {
+              const div = document.querySelector("#listening")
+              if (div && this.$refs.player.src !== '/start.mp3' && this.game && this.game.state === "playing") div.style.display = "flex"
+            })
+
+            this.$refs.player.src = this.game.songs[this.songIndex].url
+            this.$refs.player.play()
+          }, 5000)
+        }
+
         this.game = res.data
 
         if (!this.isHost && this.$store.username && !this.game.players.find(player => player.name === this.$store.username)) this.router.go(`/?error=kicked&join=${id}`)
@@ -498,6 +525,7 @@ export default {
             setTimeout(() => element.classList.remove("added"), 1000)
           }
         }
+
       } else if (res.type === "RESULTS") {
         this.searchResults = res.data
       } else if (res.type === "ERROR") {
@@ -1104,6 +1132,58 @@ export default {
       .subtitles {
         font-size: 1.5em;
       }
+    }
+  }
+}
+
+.game_board {
+  height: 100vh;
+  width: 100vw;
+
+  #count::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: $secondary-color;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 10em;
+    font-family: 'Mario Kart DS', sans-serif;
+    z-index: 200;
+    transition: all .3s ease-in-out;
+    animation: count 4s;
+  }
+
+  #listening {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+    transition: all .3s ease-in-out;
+    transform-origin: center;
+
+    h1 {
+      font-size: 4em;
+      text-align: center;
+      color: $primary-color;
+      margin-block: 0;
+      margin-inline: 0;
+      font-family: 'Bungee', sans-serif;
+    }
+
+    h3 {
+      font-size: 2em;
+      text-align: center;
+      color: $secondary-color;
+      margin-block: 0;
+      margin-inline: 0;
+    }
+
+    .gif {
+      height: 20em;
+      width: 20em;
     }
   }
 }

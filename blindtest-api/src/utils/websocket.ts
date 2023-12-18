@@ -2,8 +2,7 @@ import { green } from "colors";
 import { Server } from "ws"
 import { addConnection, addPlayer, getConnections, getGame, removePlayer } from "./storage";
 import { GameState, WSMessageStructure } from "./types";
-import e from "express";
-import { findVideoId, search } from "./songs";
+import { search } from "./songs";
 
 export async function createWS (ws: Server) {
     ws.on("connection", (websocket, req) => {
@@ -16,7 +15,7 @@ export async function createWS (ws: Server) {
 
             const url = req.url?.split("/").slice(2);
             if (!url) return websocket.close();
-            
+
             if (url[0] === "games" && getGame(url[1])) {
                 handleMessage(message.toString()).then((response) => {
                     if (response.type === "GAME") {
@@ -88,7 +87,7 @@ async function handleMessage (message: string): Promise<any> {
 
                 game = getGame(body.data.id);
                 if (!game) throw new Error("Unknown game")
-                
+
                 const connections = getConnections(body.data.id);
                 if (!connections) return { data: game, type: "GAME" };
 
@@ -119,7 +118,7 @@ async function handleMessage (message: string): Promise<any> {
                         data: game
                     }))
                 })
-                
+
                 return { data: game, type: "GAME" };
             } else throw new Error("Unknown game");
         } else if (body.value === 'STATE') {
@@ -128,6 +127,10 @@ async function handleMessage (message: string): Promise<any> {
 
             let state = body.data.state as GameState;
             game.state = state;
+
+            if (state === "playing") {
+                
+            }
 
             const connections = getConnections(body.data.id);
             if (!connections) return { data: game, type: "GAME" };
@@ -169,20 +172,14 @@ async function handleMessage (message: string): Promise<any> {
 
             if (game.state !== "waiting_songs") throw new Error("Game is not in waiting_songs state");
 
-            const videoId = await findVideoId(`${body.data.artist} ${body.data.title}`).catch((error) => {
-                throw new Error(error.message)
-            });
-
-            if (!videoId) throw new Error("No video found");
-            if (game.songs.find(x => x.videoId === videoId)) throw new Error("Song already added");
-
             game.songs.push({
-                videoId: videoId,
+                id: body.data.songId,
                 title: body.data.title,
                 artist: body.data.artist,
                 addedBy: body.data.user,
                 cover: body.data.cover,
-                explicit: body.data.explicit
+                explicit: body.data.explicit,
+                url: body.data.url
             })
 
             const connections = getConnections(body.data.id);

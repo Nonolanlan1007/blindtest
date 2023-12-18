@@ -40,11 +40,11 @@
 
 <script>
 import axios from "axios";
-import ComputerIcon from "@/components/svgs/ComputerIcon.vue";
-import PhoneIcon from "@/components/svgs/PhoneIcon.vue";
-import config from "@/assets/config";
-import PopUp from "@/components/PopUp.vue";
-import Router from "@/router";
+import ComputerIcon from "../components/svgs/ComputerIcon.vue";
+import PhoneIcon from "../components/svgs/PhoneIcon.vue";
+import config from "../assets/config";
+import PopUp from "../components/PopUp.vue";
+import Router from "../router";
 
 export default {
   name: "HomeView",

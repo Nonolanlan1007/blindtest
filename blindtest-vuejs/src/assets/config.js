@@ -1,5 +1,5 @@
 export default {
-  api: "http://192.168.1.24:3000",
-  website: "http://192.168.1.24:8080",
-  ws: "ws://192.168.1.24:3000",
+  api: "http://46.105.48.77:3002",
+  website: "https://https://blind-test.vercel.app/",
+  ws: "ws://46.105.48.77:3002",
 }

@@ -28,6 +28,12 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Titan+One&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
+@font-face {
+  font-family: 'Mario Kart DS';
+  font-display: swap;
+  src: url('@/assets/fonts/Mario Kart DS Regular.otf') format('opentype')
+}
+
 body {
   margin: 0;
   padding: 0 1em;
