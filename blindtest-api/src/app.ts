@@ -49,4 +49,4 @@ function readDirectory(directory: string) {
 
 readDirectory(path.join(__dirname, 'routes'));
 
-server.listen(process.env.PORT, () => console.log(`${green("[SERVER]")} Listening on port ${process.env.PORT}`));
+server.listen({ port: process.env.PORT, host: "0.0.0.0" }, () => console.log(`${green("[SERVER]")} Listening on port ${process.env.PORT}`));
